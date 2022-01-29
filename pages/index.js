@@ -1,5 +1,5 @@
-import { Box, Button, Text, TextField, Image } from '@skynexui/components';
-import React from 'react';
+import { Box, Button, Text, TextField, Image, Icon } from '@skynexui/components';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import appConfig from '../config.json';
 
@@ -35,9 +35,22 @@ function Titulo(props) {
 export default function PaginaInicial() {
     // const username = 'vsommah';
     const [username, setUsername] = React.useState('vsommah');
-    const roteamento = useRouter();
+    const [DadosGit, SetDadosGit] = React.useState('');
 
+    const roteamento = useRouter();
     console.log(roteamento);
+
+    useEffect(() => {
+        const profileGit = async function () {
+            await fetch(`https://api.github.com/users/${username}`)
+                .then((respostaDoServidor) => respostaDoServidor.json())
+                .then((respostaConvertida) => {
+                    SetDadosGit(respostaConvertida)
+                })
+        };
+        profileGit();
+    }, []);
+
 
     return (
         <>
@@ -69,7 +82,7 @@ export default function PaginaInicial() {
                         as="form"
                         onSubmit={function (event) {
                             event.preventDefault();
-                            console.log('ALguém submeteu o form');
+                            console.log('Alguém submeteu o form');
                             roteamento.push('/chat')
                             // window.location.href = '/chat';
                         }}
@@ -95,6 +108,7 @@ export default function PaginaInicial() {
                                 setUsername(valor);
                             }}
                         /> */}
+
                         <TextField
                             value={username}
                             onChange={function (event) {
@@ -151,7 +165,11 @@ export default function PaginaInicial() {
                                 borderRadius: '50%',
                                 marginBottom: '16px',
                             }}
-                            src={`https://github.com/${username}.png`}
+                            src={
+                                username.length > 2
+                                    ? `https://github.com/${username}.png`
+                                    : 'https://cdn-icons-png.flaticon.com/512/64/64572.png'
+                            }
                         />
                         <Text
                             variant="body4"
@@ -166,6 +184,10 @@ export default function PaginaInicial() {
                         </Text>
                     </Box>
                     {/* Photo Area */}
+
+                    {/* PegarDadosGit */}
+
+                    {/* PegarDadosGit */}
                 </Box>
             </Box>
         </>
