@@ -263,7 +263,7 @@ function MessageList(props) {
                                 }}
                                 src={
                                     mensagem.de === 'suas_costas'
-                                        ? `https://cdn-icons.flaticon.com/png/512/3184/premium/3184237.png?token=exp=1643498652~hmac=eb438c37a9f6345183da3b0b97938711`
+                                        ? `https://png1.12png.com/t/2/25/16/2uy3Va1iYr/pain-artwork-fit-n-minutes-ems-fitness-health-monochrome-photography.jpg`
                                         : `https://github.com/${mensagem.de}.png`
                                 }
                             />
