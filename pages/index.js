@@ -82,7 +82,8 @@ export default function PaginaInicial() {
                         onSubmit={function (event) {
                             event.preventDefault();
                             console.log('Alguém submeteu o form');
-                            roteamento.push('/chat')
+                            //inserindo o username na URL
+                            roteamento.push(`/chat?username=${username}`)
                             // window.location.href = '/chat';
                         }}
                         styleSheet={{

@@ -1,13 +1,30 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
+import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzQ2NzgyMSwiZXhwIjoxOTU5MDQzODIxfQ.Ym7kY7PhN1zSuroar-yZ49ALeOLb_4lkOpmURh_2u_Q';
 const SUPABASE_URL = 'https://uudifvpvpqevipsrpfpz.supabase.co';
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+function escutaMensagensEmTempoReal(adicionaMensagem) {
+    return supabaseClient
+        .from('mensagens')
+        .on('INSERT', (respostaLive) => {
+            // console.log('Houve uma nova mensgem', oQueVeio);
+            adicionaMensagem(respostaLive.new);
+        })
+        .subscribe();
+}
+
 export default function ChatPage() {
+
+    const roteamento = useRouter();
+    const usuarioLogado = roteamento.query.username;
+    // console.log('roteamento.query', roteamento.query);
+    // console.log('usuarioLogado', usuarioLogado);
 
     const [mensagem, setMensagem] = React.useState('');
     const [listaMensagens, setListaMensagens] = React.useState([]);
@@ -35,16 +52,37 @@ export default function ChatPage() {
             .from('mensagens')
             .select('*')
             .order('id', { ascending: false })
-            .then(({data}) => {
-                console.log('Dados da consulta', data);
+            .then(({ data }) => {
+                // console.log('Dados da consulta', data);
                 setListaMensagens(data);
             });
+
+        escutaMensagensEmTempoReal((novaMensagem) => {
+            console.log('Nova mensagem:', novaMensagem);
+            console.log('listaMensagens', listaMensagens);
+            // Quero reusar um valor de referência (objeto/array)
+            // Passar uma função para o setState
+            // setListaMensagens([
+            //     novaMensagem,
+            //     ...listaMensagens,
+            // ])
+            setListaMensagens((valorAtualDaLista) => {
+                console.log('valorAtualDaLista', valorAtualDaLista);
+
+                return(
+                    [
+                        novaMensagem,
+                        ...valorAtualDaLista,
+                    ]
+                )
+            });
+        });
     }, []);
 
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
             // id: listaMensagens.length + 1, // vamos pegar o id que vem do servidor
-            de: 'vanessametonini',
+            de: usuarioLogado,
             texto: novaMensagem,
         };
 
@@ -55,13 +93,9 @@ export default function ChatPage() {
                 // Tem que ser um objeto com os MESMOS CAMPOS que você escreveu no supabase
                 mensagem
             ])
-            .then(({data}) => {
+            .then(({ data }) => {
                 console.log('Criando mensagem: ', data);
                 // Povoar o objeto com as mensagens
-                setListaMensagens([
-                    data[0],
-                    ...listaMensagens,
-                ]);
             });
         // Apagar o campo de texto
         setMensagem('');
@@ -151,6 +185,16 @@ export default function ChatPage() {
                                 color: appConfig.theme.colors.neutrals[200],
                             }}
                         />
+
+                        {/* CallBack */}
+                        <ButtonSendSticker
+                            onStickerClick={(sticker) => {
+                                // console.log('[USANDO O COMPONENTE] Salva esse sticker no banco', sticker);
+                                handleNovaMensagem(`:sticker: ${sticker}`);
+                            }}
+
+                        />
+
                     </Box>
                 </Box>
             </Box>
@@ -177,7 +221,7 @@ function Header() {
 }
 
 function MessageList(props) {
-    console.log('MessageList', props);
+    // console.log('MessageList', props);
     return (
         <Box
             tag="ul"
@@ -219,8 +263,8 @@ function MessageList(props) {
                                 }}
                                 src={
                                     mensagem.de === 'suas_costas'
-                                    ? `https://cdn-icons.flaticon.com/png/512/3184/premium/3184237.png?token=exp=1643498652~hmac=eb438c37a9f6345183da3b0b97938711`
-                                    : `https://github.com/${mensagem.de}.png`
+                                        ? `https://cdn-icons.flaticon.com/png/512/3184/premium/3184237.png?token=exp=1643498652~hmac=eb438c37a9f6345183da3b0b97938711`
+                                        : `https://github.com/${mensagem.de}.png`
                                 }
                             />
                             <Text tag="strong">
@@ -237,7 +281,25 @@ function MessageList(props) {
                                 {(new Date().toLocaleDateString())}
                             </Text>
                         </Box>
-                        {mensagem.texto}
+
+                        {/* modo declarativo */}
+
+                        {/* Condicional: {mensagem.texto.startsWith(':sticker:').toString()} */}
+
+                        {mensagem.texto.startsWith(':sticker:')
+                            ? (
+                                <Image src={mensagem.texto.replace(':sticker:', '')} />
+                            )
+                            : (
+                                mensagem.texto
+                            )}
+
+                        {/* if mensagem de texto possui stickers:
+                            mostra a imagem
+                            else 
+                        mensagem.texto */}
+
+
                     </Text>
                 )
             })}
