@@ -1,5 +1,5 @@
 import { Box, Button, Text, TextField, Image, Icon } from '@skynexui/components';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
 import appConfig from '../config.json';
 
@@ -40,17 +40,16 @@ export default function PaginaInicial() {
     const roteamento = useRouter();
     console.log(roteamento);
 
-    useEffect(() => {
-        const profileGit = async function () {
-            await fetch(`https://api.github.com/users/${username}`)
-                .then((respostaDoServidor) => respostaDoServidor.json())
-                .then((respostaConvertida) => {
-                    SetDadosGit(respostaConvertida)
+    React.useEffect(() => {
+        function FetchGit() {
+            fetch(`https://api.github.com/users/${username}`)
+                .then(async (respostaServidor) => {
+                    const respostaEsperada = await respostaServidor.json();
+                    SetDadosGit(respostaEsperada);
                 })
         };
-        profileGit();
+        FetchGit();
     }, []);
-
 
     return (
         <>
@@ -71,7 +70,7 @@ export default function PaginaInicial() {
                             xs: 'column',
                             sm: 'row',
                         },
-                        width: '100%', maxWidth: '700px',
+                        width: '100%', maxWidth: '800px',
                         borderRadius: '5px', padding: '32px', margin: '16px',
                         boxShadow: '0 2px 10px 0 rgb(0 0 0 / 20%)',
                         backgroundColor: appConfig.theme.colors.neutrals[700],
@@ -149,7 +148,7 @@ export default function PaginaInicial() {
                         styleSheet={{
                             display: 'flex',
                             flexDirection: 'column',
-                            alignItems: 'center',
+                            alignItems: 'normal',
                             maxWidth: '200px',
                             padding: '16px',
                             backgroundColor: appConfig.theme.colors.neutrals[800],
@@ -158,12 +157,13 @@ export default function PaginaInicial() {
                             borderRadius: '10px',
                             flex: 1,
                             minHeight: '240px',
+                            margin: '5px',
                         }}
                     >
                         <Image
                             styleSheet={{
                                 borderRadius: '50%',
-                                marginBottom: '16px',
+                                margin: 'auto',
                             }}
                             src={
                                 username.length > 2
@@ -174,20 +174,72 @@ export default function PaginaInicial() {
                         <Text
                             variant="body4"
                             styleSheet={{
+                                display: "column",
+                                textAlign: "center",
+                                alignItems: "center",
                                 color: appConfig.theme.colors.neutrals[200],
                                 backgroundColor: appConfig.theme.colors.neutrals[900],
-                                padding: '3px 10px',
+                                padding: '5% 5%',
                                 borderRadius: '1000px'
                             }}
                         >
                             {username}
+
                         </Text>
                     </Box>
                     {/* Photo Area */}
 
-                    {/* PegarDadosGit */}
+                    {/* Info Git */}
 
-                    {/* PegarDadosGit */}
+                    <Box
+                        styleSheet={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            maxWidth: '200px',
+                            padding: '16px',
+                            backgroundColor: appConfig.theme.colors.neutrals[800],
+                            border: '1px solid',
+                            borderColor: appConfig.theme.colors.neutrals[999],
+                            borderRadius: '50px',
+                            flex: 1,
+                            minHeight: '240px',
+                        }}
+                    >
+
+                        <Text
+                            variant="body4"
+                            styleSheet={{
+                                color: appConfig.theme.colors.neutrals[200],
+                                backgroundColor: appConfig.theme.colors.neutrals[900],
+                                padding: '10% 10%',
+                                margin: 'auto',
+                                borderRadius: '50px',
+                                textAlign: "center",
+                            }}
+                        >
+                            {DadosGit.bio}
+
+                        </Text>
+
+                        <Text
+                            variant="body4"
+                            styleSheet={{
+                                color: appConfig.theme.colors.neutrals[200],
+                                backgroundColor: appConfig.theme.colors.neutrals[900],
+                                padding: '3px 10px',
+                                margin: 'auto',
+                                borderRadius: '1000px',
+                                textAlign: "center",
+                            }}
+                        >
+
+                            {DadosGit.location}
+
+                        </Text>
+                    </Box>
+
+                    {/* Info Git */}
                 </Box>
             </Box>
         </>

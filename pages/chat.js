@@ -1,6 +1,11 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzQ2NzgyMSwiZXhwIjoxOTU5MDQzODIxfQ.Ym7kY7PhN1zSuroar-yZ49ALeOLb_4lkOpmURh_2u_Q';
+const SUPABASE_URL = 'https://uudifvpvpqevipsrpfpz.supabase.co';
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function ChatPage() {
 
@@ -25,17 +30,40 @@ export default function ChatPage() {
 
     // ./Sua lógica vai aqui
 
+    React.useEffect(() => {
+        supabaseClient
+            .from('mensagens')
+            .select('*')
+            .order('id', { ascending: false })
+            .then(({data}) => {
+                console.log('Dados da consulta', data);
+                setListaMensagens(data);
+            });
+    }, []);
+
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
-            id: listaMensagens.length + 1,
+            // id: listaMensagens.length + 1, // vamos pegar o id que vem do servidor
             de: 'vanessametonini',
             texto: novaMensagem,
         };
-        // Chamada de um backend
-        setListaMensagens([
-            mensagem,
-            ...listaMensagens,
-        ]);
+
+        // Enviar ao servidor
+        supabaseClient
+            .from('mensagens')
+            .insert([
+                // Tem que ser um objeto com os MESMOS CAMPOS que você escreveu no supabase
+                mensagem
+            ])
+            .then(({data}) => {
+                console.log('Criando mensagem: ', data);
+                // Povoar o objeto com as mensagens
+                setListaMensagens([
+                    data[0],
+                    ...listaMensagens,
+                ]);
+            });
+        // Apagar o campo de texto
         setMensagem('');
     }
 
@@ -44,7 +72,7 @@ export default function ChatPage() {
             styleSheet={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 backgroundColor: appConfig.theme.colors.primary[500],
-                backgroundImage: `url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)`,
+                backgroundImage: `url(https://cdn.wallpapersafari.com/84/22/Jz6bAs.gif)`,
                 backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
                 color: appConfig.theme.colors.neutrals['000']
             }}
@@ -189,7 +217,11 @@ function MessageList(props) {
                                     display: 'inline-block',
                                     marginRight: '8px',
                                 }}
-                                src={`https://github.com/vanessametonini.png`}
+                                src={
+                                    mensagem.de === 'suas_costas'
+                                    ? `https://cdn-icons.flaticon.com/png/512/3184/premium/3184237.png?token=exp=1643498652~hmac=eb438c37a9f6345183da3b0b97938711`
+                                    : `https://github.com/${mensagem.de}.png`
+                                }
                             />
                             <Text tag="strong">
                                 {mensagem.de}
@@ -200,7 +232,7 @@ function MessageList(props) {
                                     marginLeft: '8px',
                                     color: appConfig.theme.colors.neutrals[300],
                                 }}
-                            tag="span"
+                                tag="span"
                             >
                                 {(new Date().toLocaleDateString())}
                             </Text>
